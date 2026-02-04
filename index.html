@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Profile Fetcher | Modern Dashboard</title>
+    <!-- Tailwind CSS via CDN -->
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- GitHub Corners for a professional touch -->
+    <link rel="stylesheet" href="https://unpkg.com/github-corners/dist/github-corners.css">
+    <script src="https://unpkg.com/github-corners/dist/github-corners.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="./src/output.css">
+    <link rel="stylesheet" href="./src/style.css">
+    
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <!-- GitHub Corner -->
+    <github-corner href="https://github.com" size="60" position="right" fill="#333" color="#fff"></github-corner>
+    
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <header class="text-center mb-12 fade-in">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+                <i class="fab fa-github text-gray-700 mr-3"></i>GitHub Profile Fetcher
+            </h1>
+            <p class="text-gray-600 text-lg max-w-3xl mx-auto">
+                Enter a GitHub username to fetch and display detailed profile information, repositories, skills, and more.
+            </p>
+        </header>
+
+        <!-- Search Section -->
+        <section class="glass-effect rounded-2xl shadow-xl p-6 mb-10 max-w-2xl mx-auto">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-grow">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                        <input 
+                            type="text" 
+                            id="usernameInput" 
+                            class="w-full pl-10 p-4 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition"
+                            placeholder="Enter GitHub username (e.g., torvalds, octocat)"
+                            autocomplete="off"
+                        >
+                    </div>
+                </div>
+                <button 
+                    id="fetchButton" 
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-xl transition duration-300 shadow-lg hover:shadow-xl flex items-center justify-center"
+                >
+                    <i class="fas fa-search mr-2"></i> Fetch Profile
+                </button>
+            </div>
+            <div class="mt-4 text-gray-500 text-sm flex items-center">
+                <i class="fas fa-lightbulb mr-2"></i>
+                <span>Try popular usernames like <span class="font-medium text-blue-600 cursor-pointer username-suggestion">torvalds</span>, <span class="font-medium text-blue-600 cursor-pointer username-suggestion">octocat</span>, or <span class="font-medium text-blue-600 cursor-pointer username-suggestion">github</span></span>
+            </div>
+
+            <!-- Recent searches -->
+            <div id="recentSearchesWrapper" class="mt-3 text-sm text-gray-600 hidden">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-clock mr-2 text-gray-500"></i>
+                    <span class="font-medium">Recent searches</span>
+                </div>
+                <div id="recentSearches" class="flex flex-wrap gap-2">
+                    <!-- Filled dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Loader -->
+        <div id="loader" class="hidden flex justify-center my-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorContainer" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mb-8 rounded-r-lg">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
+                </div>
+                <div class="ml-3">
+                    <p id="errorMessage" class="text-red-700">Error message will appear here</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Display Area -->
+        <div id="profileContainer" class="hidden fade-in">
+            <!-- Profile Header -->
+            <div class="glass-effect rounded-2xl shadow-xl p-6 mb-8">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <!-- Avatar and basic info -->
+                    <div class="flex flex-col items-center md:items-start">
+                        <img id="avatar" src="" alt="Profile Avatar" class="w-36 h-36 rounded-full border-4 border-white shadow-lg mb-4">
+                        <div class="text-center md:text-left">
+                            <h2 id="name" class="text-2xl font-bold text-gray-800"></h2>
+                            <p id="login" class="text-gray-600 mb-2"></p>
+                            <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+                                <span id="badgeFollowers" class="bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full flex items-center">
+                                    <i class="fas fa-users mr-1"></i> <span id="followersCount">0</span> followers
+                                </span>
+                                <span id="badgeFollowing" class="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full flex items-center">
+                                    <i class="fas fa-user-friends mr-1"></i> <span id="followingCount">0</span> following
+                                </span>
+                                <span id="badgeRepos" class="bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1 rounded-full flex items-center">
+                                    <i class="fas fa-code-branch mr-1"></i> <span id="publicRepos">0</span> repos
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bio and details -->
+                    <div class="flex-grow">
+                        <div class="mb-4">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">Bio</h3>
+                            <p id="bio" class="text-gray-600 italic">No bio available</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-center text-gray-700">
+                                <i class="fas fa-map-marker-alt text-gray-400 mr-3 w-5"></i>
+                                <span id="location">Not specified</span>
+                            </div>
+                            <div class="flex items-center text-gray-700">
+                                <i class="fas fa-link text-gray-400 mr-3 w-5"></i>
+                                <a id="blog" href="#" target="_blank" class="text-blue-600 hover:underline truncate">No website</a>
+                            </div>
+                            <div class="flex items-center text-gray-700">
+                                <i class="fab fa-twitter text-gray-400 mr-3 w-5"></i>
+                                <span id="twitter">Not specified</span>
+                            </div>
+                            <div class="flex items-center text-gray-700">
+                                <i class="fas fa-building text-gray-400 mr-3 w-5"></i>
+                                <span id="company">Not specified</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column: Stats and Skills -->
+                <div class="lg:col-span-1 space-y-8">
+                    <!-- GitHub Stats -->
+                    <div class="glass-effect rounded-2xl shadow-xl p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                            <i class="fas fa-chart-bar text-blue-500 mr-2"></i> GitHub Stats
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Public Repositories</span>
+                                    <span id="statRepos" class="font-bold text-gray-800">0</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="repoBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Public Gists</span>
+                                    <span id="statGists" class="font-bold text-gray-800">0</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="gistBar" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Account Age</span>
+                                    <span id="accountAge" class="font-bold text-gray-800">0 days</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="ageBar" class="bg-purple-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills / Top Languages -->
+                    <div class="glass-effect rounded-2xl shadow-xl p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                            <i class="fas fa-code text-green-500 mr-2"></i> Top Languages
+                        </h3>
+                        <div id="skillsContainer" class="flex flex-wrap gap-2">
+                            <!-- Skills will be dynamically added here -->
+                            <div class="text-gray-500 italic">Languages will appear after fetching profile</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Repositories -->
+                <div class="lg:col-span-2">
+                    <div class="glass-effect rounded-2xl shadow-xl p-6">
+                        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                                <i class="fas fa-book text-purple-500 mr-2"></i> Repositories
+                                <span id="repoCount" class="ml-2 bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full">0</span>
+                            </h3>
+                            <div class="flex flex-col items-stretch md:items-end space-y-2">
+                                <div class="flex space-x-2">
+                                    <button id="sortStars" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition">
+                                        <i class="fas fa-star mr-1"></i> Sort by Stars
+                                    </button>
+                                    <button id="sortUpdate" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition">
+                                        <i class="fas fa-history mr-1"></i> Sort by Update
+                                    </button>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-filter text-gray-400"></i>
+                                    <input
+                                        id="repoFilterInput"
+                                        type="text"
+                                        placeholder="Filter repos by name..."
+                                        class="w-full md:w-64 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="reposContainer" class="space-y-4">
+                            <!-- Repositories will be dynamically added here -->
+                            <div class="text-center text-gray-500 italic py-8">
+                                User repositories will appear here after fetching profile
+                            </div>
+                        </div>
+
+                        <!-- Repo pagination / slider controls -->
+                        <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm text-gray-600">
+                            <div class="flex items-center gap-2">
+                                <button id="repoPrev" class="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                                    <i class="fas fa-chevron-left mr-1"></i> Prev
+                                </button>
+                                <button id="repoNext" class="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                                    Next <i class="fas fa-chevron-right ml-1"></i>
+                                </button>
+                            </div>
+                            <p id="repoPageInfo" class="text-xs text-gray-500 text-right">
+                                <!-- Filled dynamically -->
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-16 text-center text-gray-500 text-sm">
+            <p>GitHub Profile Fetcher &copy; <span id="currentYear"></span> | Made with <i class="fas fa-heart text-red-500"></i> using GitHub API</p>
+            <p class="mt-2">This tool fetches public data from GitHub's API. Rate limit: 60 requests per hour for unauthenticated requests.</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="./src/script.js"></script>
+    
+    <script>
+        // Set current year in footer
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
