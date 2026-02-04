@@ -1,11 +1,11 @@
 // GitHub Profile Fetcher
-import "dotenv/config";
+
 
 document.addEventListener('DOMContentLoaded', function() {
   // OPTIONAL: GitHub personal access token for higher rate limits.
   // Put your token string below locally and NEVER commit a real token.
   // Example: const GITHUB_TOKEN = "ghp_xxx...";
-  const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+  const GITHUB_TOKEN = "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";
 
   function getAuthHeaders() {
     if (!GITHUB_TOKEN) return {};
